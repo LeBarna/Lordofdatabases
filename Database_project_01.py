@@ -69,7 +69,8 @@ if not URI or not USER or not PASSWORD:
     st.error("Missing Neo4j environment variables")
     st.stop()
 
-driver = GraphDatabase.driver("neo4j+s://188c073e.databases.neo4j.io", auth=("neo4j", "f0F7k3AhZQ8vnUyi5i-CyL1S6j5rSWWN73o-Fkyo8eM"))
+driver = GraphDatabase.driver(URI, auth=(USER, PASSWORD))
+
 
 st.write("DEBUG URI:", URI)
 
