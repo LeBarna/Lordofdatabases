@@ -1,4 +1,4 @@
-﻿from neo4j import GraphDatabase
+from neo4j import GraphDatabase
 import streamlit as st
 from pyvis.network import Network
 import streamlit.components.v1 as components
@@ -57,6 +57,9 @@ add_bg_from_local("lotrbg.jpg")
 
 st.set_page_config(page_title="Tolkien Graph Explorer", layout="wide")
 
+import os
+from neo4j import GraphDatabase
+
 URI = os.getenv("NEO4J_URI")
 USER = os.getenv("NEO4J_USER")
 PASSWORD = os.getenv("NEO4J_PASSWORD")
@@ -65,16 +68,9 @@ driver = GraphDatabase.driver(URI, auth=(USER, PASSWORD))
 
 st.write("DEBUG URI:", URI)
 
-
-
-
-@st.cache_resource
-def get_driver():
-    return GraphDatabase.driver(URI, auth=(USER, PASSWORD))
-
-
-driver = get_driver()
-
+with driver.session() as session:
+    result = session.run("RETURN 1 AS test")
+    st.write("Neo4j connection test:", result.single()["test"])
 
 
 
