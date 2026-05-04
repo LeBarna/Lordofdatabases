@@ -57,9 +57,13 @@ add_bg_from_local("lotrbg.jpg")
 
 st.set_page_config(page_title="Tolkien Graph Explorer", layout="wide")
 
-URI = "bolt://127.0.0.1:7687"
-USER = "neo4j"
-PASSWORD = "Lb020388"
+URI = os.getenv("NEO4J_URI")
+USER = os.getenv("NEO4J_USER")
+PASSWORD = os.getenv("NEO4J_PASSWORD")
+
+driver = GraphDatabase.driver(URI, auth=(USER, PASSWORD))
+
+st.write("DEBUG URI:", URI)
 
 
 
