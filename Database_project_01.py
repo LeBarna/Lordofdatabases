@@ -3,7 +3,7 @@ import streamlit as st
 from pyvis.network import Network
 import streamlit.components.v1 as components
 import os
-from neo4j import GraphDatabase
+
 import base64
 
 def add_bg_from_local(image_file):
@@ -58,8 +58,8 @@ add_bg_from_local("lotrbg.jpg")
 
 st.set_page_config(page_title="Tolkien Graph Explorer", layout="wide")
 
-import os
-from neo4j import GraphDatabase
+
+
 
 URI = os.getenv("NEO4J_URI")
 USER = os.getenv("NEO4J_USER")
