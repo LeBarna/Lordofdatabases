@@ -2,7 +2,7 @@ from neo4j import GraphDatabase
 import streamlit as st
 from pyvis.network import Network
 import streamlit.components.v1 as components
-st.cache_data.clear()
+
 import base64
 
 def add_bg_from_local(image_file):
@@ -64,7 +64,19 @@ URI = os.getenv("NEO4J_URI")
 USER = os.getenv("NEO4J_USER")
 PASSWORD = os.getenv("NEO4J_PASSWORD")
 
+if not URI or not USER or not PASSWORD:
+    st.error("Missing Neo4j environment variables")
+    st.stop()
+
 driver = GraphDatabase.driver(URI, auth=(USER, PASSWORD))
+
+driver = None
+
+try:
+    driver = GraphDatabase.driver(URI, auth=(USER, PASSWORD))
+except Exception as e:
+    st.error(f"DB connection failed: {e}")
+    st.stop()
 
 st.write("DEBUG URI:", URI)
 
