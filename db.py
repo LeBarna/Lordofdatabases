@@ -13,6 +13,9 @@ def _get_env(name, fallback=None):
 
 @st.cache_resource
 def get_driver():
+    print("NEO4J_URI =", repr(os.getenv("NEO4J_URI")))
+    print("NEO4J_USER =", repr(os.getenv("NEO4J_USER")))
+    print("NEO4J_PASSWORD length =", len(os.getenv("NEO4J_PASSWORD") or ""))
     uri = _get_env("NEO4J_URI")
     user = _get_env("NEO4J_USERNAME")
     password = _get_env("NEO4J_PASSWORD")
