@@ -1,32 +1,19 @@
-from neo4j import GraphDatabase
-import streamlit as st
-from pyvis.network import Network
-import streamlit.components.v1 as components
 import os
 import base64
 import tempfile
-from urllib.parse import urlparse
 
-# ------------------------------------------------------------
-# 1) Streamlit config MUST be first Streamlit command
-# ------------------------------------------------------------
-st.set_page_config(page_title="Tolkien Graph Explorer", layout="wide")  # 【1-bbac92】
+import streamlit as st
+import streamlit.components.v1 as components
+from neo4j import GraphDatabase
+from neo4j.exceptions import AuthError, ServiceUnavailable, ConfigurationError
+from pyvis.network import Network
+
+# 1) MUST be first Streamlit command
+st.set_page_config(page_title="Tolkien Graph Explorer", layout="wide")  # 【1-c8fede】
 
 
-# ------------------------------------------------------------
-# Helpers
-# ------------------------------------------------------------
-def _mask_uri(uri: str) -> str:
-    try:
-        p = urlparse(uri)
-        host = p.hostname or ""
-        scheme = p.scheme or ""
-        return f"{scheme}://{host}"
-    except Exception:
-        return "<?>"
-
-def add_bg_from_local(image_file: str):
-    # Don't crash the whole app if file missing in deployment
+def add_bg_from_local(image_file):
+    # ne ölje meg az appot, ha Renderen nem találja a fájlt
     try:
         with open(image_file, "rb") as f:
             encoded = base64.b64encode(f.read()).decode()
@@ -34,22 +21,10 @@ def add_bg_from_local(image_file: str):
         st.markdown(
             f"""
 <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&display=swap" rel="stylesheet">
-
 <style>
 html, body, div, span, input, textarea, button, label, p, li, ul, ol, h1, h2, h3, h4, h5, h6 {{
     font-family: 'IM Fell English', serif !important;
 }}
-
-[data-testid="stAppViewContainer"],
-[data-testid="stSidebar"],
-[data-testid="stMarkdownContainer"],
-[data-testid="stHeader"],
-[data-testid="stToolbar"],
-[data-testid="stText"],
-[data-testid="stWidgetLabel"] {{
-    font-family: 'IM Fell English', serif !important;
-}}
-
 [data-testid="stAppViewContainer"] {{
     background-image:
         linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
@@ -58,53 +33,91 @@ html, body, div, span, input, textarea, button, label, p, li, ul, ol, h1, h2, h3
     background-position: center;
     background-repeat: no-repeat;
 }}
-
 [data-testid="stAppViewContainer"] > .main {{
     background: transparent;
-    position: relative;
-    z-index: 1;
 }}
 </style>
 """,
             unsafe_allow_html=True
         )
     except Exception as e:
-        st.sidebar.warning(f"Background image not loaded: {e}")
+        st.sidebar.warning(f"Háttérkép betöltése kihagyva: {e}")
 
-def sanitize_cypher(q: str) -> str:
-    # In case your file contains HTML-escaped arrows like -&gt;
-    return (q or "").replace("&gt;", ">").replace("&lt;", "<").replace("&amp;", "&")
+add_bg_from_local("lotrbg.jpg")
 
 
-# ------------------------------------------------------------
-# 2) Neo4j driver as a cached resource (one per process)
-# ------------------------------------------------------------
+def _get_env(name, fallback=None):
+    v = os.getenv(name)
+    if v is None and fallback:
+        v = os.getenv(fallback)
+    return v.strip() if isinstance(v, str) else v
+
+
 @st.cache_resource
 def get_driver():
-    uri = os.getenv("NEO4J_URI")
-    user = os.getenv("NEO4J_USERNAME") or os.getenv("NEO4J_USER")
-    password = os.getenv("NEO4J_PASSWORD")
+    uri = _get_env("NEO4J_URI")
+    user = _get_env("NEO4J_USERNAME", fallback="NEO4J_USER")
+    password = _get_env("NEO4J_PASSWORD")
 
     if not uri or not user or not password:
-        raise RuntimeError("Missing Neo4j environment variables (NEO4J_URI, NEO4J_USERNAME/NEO4J_USER, NEO4J_PASSWORD).")
+        raise RuntimeError("Hiányzó Neo4j env var: NEO4J_URI, NEO4J_USERNAME/NEO4J_USER, NEO4J_PASSWORD")
 
     driver = GraphDatabase.driver(uri, auth=(user, password))
-    # Verify connectivity explicitly (good for Aura + catching auth/SSL issues early) 【3-679bff】【4-c39e67】
+    # gyors, explicit ellenőrzés (javasolt) 【4-04aabe】
     driver.verify_connectivity()
     return driver
 
 
-def neo4j_ok_banner():
+def try_connect_banner():
     try:
         driver = get_driver()
-        st.sidebar.success(f"Neo4j OK: {_mask_uri(os.getenv('NEO4J_URI', ''))}")
-        return driver
-    except Exception as e:
-        st.sidebar.error("Neo4j connection failed (UI will still load).")
-        st.sidebar.caption(f"Reason: {type(e).__name__}: {e}")
-        return None
+        st.sidebar.success("Neo4j kapcsolat: OK")
+        return driver, None
+    except (AuthError, ServiceUnavailable, ConfigurationError, RuntimeError) as e:
+        # UI tovább él, csak Neo4j funkciók lesznek tiltva
+        st.sidebar.error("Neo4j kapcsolat: HIBA")
+        st.sidebar.caption(f"{type(e).__name__}: {e}")
+        return None, e
 
 
+driver, conn_err = try_connect_banner()
+
+# Ne csinálj session.run-t top-levelen! (ez ölte meg a futást Renderen)
+with st.expander("Neo4j debug", expanded=False):
+    st.write("NEO4J_URI set:", bool(os.getenv("NEO4J_URI")))
+    st.write("NEO4J_USERNAME/NEO4J_USER set:", bool(os.getenv("NEO4J_USERNAME") or os.getenv("NEO4J_USER")))
+    st.write("NEO4J_PASSWORD set:", bool(os.getenv("NEO4J_PASSWORD")))
+    st.write("Tipp: Aura URI scheme gyakran neo4j+s://...")  # 【5-2029c6】
+
+if conn_err is not None:
+    st.warning("A Neo4j nem elérhető hitelesítési/kapcsolati hiba miatt. Az app UI működik, de a DB-funkciók le vannak tiltva.")
+    # itt nem állítjuk le az appot; csak a DB részeket kell guard-olni
+
+# Példa: DB-hívó függvényekben ellenőrzés:
+@st.cache_data
+def safe_run(query, **params):
+    if driver is None:
+        return []
+    with driver.session() as session:
+        return list(session.run(query, **params))
+
+
+def draw_graph(edges):
+    net = Network(height="650px", width="100%", bgcolor="#111111", font_color="white", directed=False)
+    net.barnes_hut()
+
+    for src, rel, dst, race, realm in edges:
+        if not src or not dst:
+            continue
+        net.add_node(src, label=src)
+        net.add_node(dst, label=dst)
+        net.add_edge(src, dst, label=rel)
+
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".html")
+    tmp.close()
+    net.save_graph(tmp.name)
+    with open(tmp.name, "r", encoding="utf-8") as f:
+        components.html(f.read(), height=680, scrolling=True)
 # ------------------------------------------------------------
 # UI cosmetics (after page config)
 # ------------------------------------------------------------
