@@ -17,7 +17,7 @@ def get_driver():
     print("NEO4J_USER =", repr(os.getenv("NEO4J_USER")))
     print("NEO4J_PASSWORD length =", len(os.getenv("NEO4J_PASSWORD") or ""))
     uri = _get_env("NEO4J_URI")
-    user = _get_env("NEO4J_USERNAME")
+    user = _get_env("NEO4J_USER")
     password = _get_env("NEO4J_PASSWORD")
 
     if not uri or not user or not password:
