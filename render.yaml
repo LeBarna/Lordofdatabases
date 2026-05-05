@@ -3,6 +3,6 @@ services:
     name: tolkien-graph
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: streamlit run Database_project_01.py --server.port $PORT --server.address 0.0.0.0
+    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
     plan: free
     autoDeploy: true
