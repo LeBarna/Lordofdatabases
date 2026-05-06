@@ -28,8 +28,27 @@ def draw_graph(edges):
 
     added_nodes = set()
 
-    for src, rel, dst, race, realm in edges:
+    for row in edges:
 
+        # 3 elemű tuple → (src, rel, dst)
+        if len(row) == 3:
+            src, rel, dst = row
+            race = "Unknown"
+            realm = "Unknown"
+
+        # 5 elemű tuple → (src, rel, dst, race, realm)
+        elif len(row) == 5:
+            src, rel, dst, race, realm = row
+
+        else:
+            # rossz formátum → skip
+            continue
+
+        # skip, ha src vagy dst nem string
+        if not isinstance(src, str) or not isinstance(dst, str):
+            continue
+
+        # node-ok
         if src not in added_nodes:
             net.add_node(src, label=src)
             added_nodes.add(src)
@@ -39,8 +58,10 @@ def draw_graph(edges):
             net.add_node(dst, label=dst, color=race_color(race), title=title)
             added_nodes.add(dst)
 
+        # edge
         net.add_edge(src, dst, label=rel)
 
+    # HTML mentés
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".html")
     tmp.close()
 
