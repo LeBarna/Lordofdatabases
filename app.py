@@ -60,64 +60,133 @@ if mode == "Character Editor":
 
     editor_ui()
 
-else:
+ with st.sidebar:
 
-    name = st.sidebar.text_input(
-        "Character name",
-        "Aragorn"
-    )
+     st.title("Search")
 
-    if driver is None:
-        st.warning("Neo4j connection not available")
-        st.stop()
+     name = st.text_input("Character name", value="Aragorn")
 
-    # --- KÉT OSZLOP ---
-    col_left, col_right = st.columns([1, 2])
+     st.markdown("---")
+     st.caption("Filters")
 
-    # --- BAL OSZLOP: karakter adatok ---
-    with col_left:
+     race_filter = st.multiselect(
+         "Race filter",
+         ["Elf", "Man", "Dwarf", "Hobbit", "Maiar", "Orc"]
+     )
 
-        char = get_character_basic(name)
+     race_filter_val = race_filter if race_filter else None
 
-        if char:
-            st.subheader(char["name"])
-            st.write("Race:", char["race"])
-            st.write("Age:", char["age"])
-            st.write("Realm:", char["realm"])
+     rel_filter = st.multiselect(
+         "Relationship types",
+         ["ALLY_OF", "ENEMY_OF", "DESCENDANT_OF", "FRIEND_OF", "MEMBER_OF"]
+     )
 
-        elves = check_elvish_ancestry(name)
-        if elves:
-            st.subheader("Elvish ancestry")
-            for e in elves:
-                st.write(e["elf_ancestor"])
+     rel_filter_val = rel_filter if rel_filter else None
 
-        lineage = get_lineage(name)
-        if lineage:
-            st.subheader("Lineage")
-            for l in lineage:
-                st.write(l["name"], "-", l["race"])
+     st.markdown("---")
+     st.caption("Sections")
 
-    # --- JOBB OSZLOP: graph ---
-    with col_right:
-        edges = get_neighbors(name)
-        if edges:
-            draw_graph(edges)
+     show_connections = st.checkbox("🔗 Connections", True)
+     show_elf = st.checkbox("🧝 Elvish ancestry", True)
+     show_lineage = st.checkbox("🧬 Lineage", True)
+     show_graph = st.checkbox("🕸️ Graph", True)
 
 
-    elves = check_elvish_ancestry(name)
+ 
 
-    if elves:
+ st.title("Middle Earth Wiki")
 
-        st.subheader("Elvish ancestry")
+ results = []
+ elf_results = []
+ lineage_results = []
+ char_info = None
 
-        for e in elves:
-            st.write(e["elf_ancestor"])
+ if name:
 
-    lineage = get_lineage(name)
+     char_info = get_character_basic(name)
 
-    if lineage:
+     if show_connections or show_graph:
 
-        st.subheader("Lineage")
+         raw = get_neighbors(name, race_filter_val, rel_filter_val)
 
+         results = list({
+             (r["from"], r["rel"], r["to"], r["race"], r["realm"])
+             for r in raw
+             if r["to"] is not None
+         })
+
+     if show_elf:
+         elf_results = check_elvish_ancestry(name)
+
+     if show_lineage:
+         lineage_results = get_lineage(name)
+
+
+ 
+
+ col1, col2 = st.columns([1, 2])
+
+
+ 
+
+ with col1:
+
+     st.subheader("🔍 Character info")
+
+     if not name:
+         st.info("Search for a character.")
+     else:
+
+         if char_info:
+
+             st.markdown(f"### {char_info['name']}")
+             st.markdown(f"**Race:** {char_info['race'] or 'Unknown'}")
+             st.markdown(f"**Age:** {char_info['age'] or 'Unknown'}")
+
+         else:
+             st.warning("Character not found.")
+
+         if show_elf:
+
+             st.markdown("---")
+             st.subheader("🧝 Elvish ancestry")
+
+             if elf_results:
+                 for r in elf_results:
+                     st.markdown(f"🧝 {r['elf_ancestor']}")
+             else:
+                 st.info("No elvish ancestry found.")
+
+         if show_lineage:
+
+             st.markdown("---")
+             st.subheader("🧬 Lineage")
+
+             if lineage_results:
+
+                 for r in lineage_results:
+                     st.markdown(
+                         f"- {r['name']} ({r['race'] or 'Unknown'}, {r['realm'] or 'Unknown'})"
+                     )
+
+             else:
+                 st.info("No lineage data found.")
+
+         if show_connections:
+
+             st.markdown("---")
+             st.subheader("🔗 Connections")
+
+             if results:
+
+                 for src, rel, dst, race, realm in results:
+
+                     st.markdown(
+                         f"**{src}** → *{rel}* → **{dst}** "
+                         f"({race or 'Unknown'}, {realm or 'Unknown'})"
+                     )
+
+             else:
+                 st.info("No connections found.")
         for l in lineage:
             st.write(l["name"], "-", l["race"])
