@@ -3,7 +3,48 @@ from db import try_connect_banner, get_character_basic, get_neighbors, check_elv
 from graph import draw_graph
 from editor import editor_ui
 
+def add_bg_from_local(image_file):
+    with open(image_file, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode()
+
+    st.markdown(f"""
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&display=swap" rel="stylesheet">
+
+<style>
+html, body, div, span, input, textarea, button, label, p, li, ul, ol, h1, h2, h3, h4, h5, h6 {{
+    font-family: 'IM Fell English', serif !important;
+}}
+
+[data-testid="stAppViewContainer"],
+[data-testid="stSidebar"],
+[data-testid="stMarkdownContainer"],
+[data-testid="stHeader"],
+[data-testid="stToolbar"],
+[data-testid="stText"],
+[data-testid="stWidgetLabel"] {{
+    font-family: 'IM Fell English', serif !important;
+}}
+
+[data-testid="stAppViewContainer"] {{
+    background-image:
+        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+        url("data:image/png;base64,{encoded}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}}
+
+[data-testid="stAppViewContainer"] > .main {{
+    background: transparent;
+    position: relative;
+    z-index: 1;
+}}
+</style>
+""", unsafe_allow_html=True)
+
 st.set_page_config(page_title="Middle Earth Wiki", layout="wide")
+
+add_bg_from_local("assets/lotrbg.jpg")
 
 st.title("Middle Earth Wiki")
 
