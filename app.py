@@ -95,14 +95,14 @@ else:
     
      
     
-     st.title("Middle Earth Wiki")
+    st.title("Middle Earth Wiki")
     
-     results = []
-     elf_results = []
-     lineage_results = []
-     char_info = None
+    results = []
+    elf_results = []
+    lineage_results = []
+    char_info = None
     
-     if name:
+    if name:
     
          char_info = get_character_basic(name)
     
@@ -125,12 +125,12 @@ else:
     
      
     
-     col1, col2 = st.columns([1, 2])
+    col1, col2 = st.columns([1, 2])
     
     
      
     
-     with col1:
+    with col1:
     
          st.subheader("🔍 Character info")
     
