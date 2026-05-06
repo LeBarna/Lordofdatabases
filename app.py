@@ -63,34 +63,34 @@ if mode == "Character Editor":
 else:
     with st.sidebar:
 
-    st.title("Search")
-
-    name = st.text_input("Character name", value="Aragorn")
-
-    st.markdown("---")
-    st.caption("Filters")
-
-    race_filter = st.multiselect(
-        "Race filter",
-        ["Elf", "Man", "Dwarf", "Hobbit", "Maiar", "Orc"]
-    )
-
-    race_filter_val = race_filter if race_filter else None
-
-    rel_filter = st.multiselect(
-        "Relationship types",
-        ["ALLY_OF", "ENEMY_OF", "DESCENDANT_OF", "FRIEND_OF", "MEMBER_OF"]
-    )
-
-    rel_filter_val = rel_filter if rel_filter else None
-
-    st.markdown("---")
-    st.caption("Sections")
-
-    show_connections = st.checkbox("🔗 Connections", True)
-    show_elf = st.checkbox("🧝 Elvish ancestry", True)
-    show_lineage = st.checkbox("🧬 Lineage", True)
-    show_graph = st.checkbox("🕸️ Graph", True)
+        st.title("Search")
+    
+        name = st.text_input("Character name", value="Aragorn")
+    
+        st.markdown("---")
+        st.caption("Filters")
+    
+        race_filter = st.multiselect(
+            "Race filter",
+            ["Elf", "Man", "Dwarf", "Hobbit", "Maiar", "Orc"]
+        )
+    
+        race_filter_val = race_filter if race_filter else None
+    
+        rel_filter = st.multiselect(
+            "Relationship types",
+            ["ALLY_OF", "ENEMY_OF", "DESCENDANT_OF", "FRIEND_OF", "MEMBER_OF"]
+        )
+    
+        rel_filter_val = rel_filter if rel_filter else None
+    
+        st.markdown("---")
+        st.caption("Sections")
+    
+        show_connections = st.checkbox("🔗 Connections", True)
+        show_elf = st.checkbox("🧝 Elvish ancestry", True)
+        show_lineage = st.checkbox("🧬 Lineage", True)
+        show_graph = st.checkbox("🕸️ Graph", True)
 
 
 
