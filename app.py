@@ -2,6 +2,7 @@ import streamlit as st
 from db import try_connect_banner, get_character_basic, get_neighbors, check_elvish_ancestry, get_lineage
 from graph import draw_graph
 from editor import editor_ui
+import base64
 
 def add_bg_from_local(image_file):
     with open(image_file, "rb") as f:
