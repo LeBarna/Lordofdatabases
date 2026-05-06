@@ -47,8 +47,6 @@ st.set_page_config(page_title="Middle Earth Wiki", layout="wide")
 
 add_bg_from_local("assets/lotrbg.jpg")
 
-st.title("Middle Earth Wiki")
-
 driver = try_connect_banner()
 
 mode = st.sidebar.radio(
