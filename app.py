@@ -95,112 +95,112 @@ else:
 
 
 
-st.title("Middle Earth Wiki")
-
-results = []
-elf_results = []
-lineage_results = []
-char_info = None
-
-if name:
-
-    char_info = get_character_basic(name)
-
-    if show_connections or show_graph:
-
-        raw = get_neighbors(name, race_filter_val, rel_filter_val)
-
-        results = list({
-            (r["from"], r["rel"], r["to"], r["race"], r["realm"])
-            for r in raw
-            if r["to"] is not None
-        })
-
-    if show_elf:
-        elf_results = check_elvish_ancestry(name)
-
-    if show_lineage:
-        lineage_results = get_lineage(name)
-
-
-
-
-col1, col2 = st.columns([1, 2])
-
-
-
-
-with col1:
-
-    st.subheader("🔍 Character info")
-
-    if not name:
-        st.info("Search for a character.")
-    else:
-
-        if char_info:
-
-            st.markdown(f"### {char_info['name']}")
-            st.markdown(f"**Race:** {char_info['race'] or 'Unknown'}")
-            st.markdown(f"**Age:** {char_info['age'] or 'Unknown'}")
-
-        else:
-            st.warning("Character not found.")
-
+    st.title("Middle Earth Wiki")
+    
+    results = []
+    elf_results = []
+    lineage_results = []
+    char_info = None
+    
+    if name:
+    
+        char_info = get_character_basic(name)
+    
+        if show_connections or show_graph:
+    
+            raw = get_neighbors(name, race_filter_val, rel_filter_val)
+    
+            results = list({
+                (r["from"], r["rel"], r["to"], r["race"], r["realm"])
+                for r in raw
+                if r["to"] is not None
+            })
+    
         if show_elf:
-
-            st.markdown("---")
-            st.subheader("🧝 Elvish ancestry")
-
-            if elf_results:
-                for r in elf_results:
-                    st.markdown(f"🧝 {r['elf_ancestor']}")
-            else:
-                st.info("No elvish ancestry found.")
-
+            elf_results = check_elvish_ancestry(name)
+    
         if show_lineage:
-
-            st.markdown("---")
-            st.subheader("🧬 Lineage")
-
-            if lineage_results:
-
-                for r in lineage_results:
-                    st.markdown(
-                        f"- {r['name']} ({r['race'] or 'Unknown'}, {r['realm'] or 'Unknown'})"
-                    )
-
-            else:
-                st.info("No lineage data found.")
-
-        if show_connections:
-
-            st.markdown("---")
-            st.subheader("🔗 Connections")
-
-            if results:
-
-                for src, rel, dst, race, realm in results:
-
-                    st.markdown(
-                        f"**{src}** → *{rel}* → **{dst}** "
-                        f"({race or 'Unknown'}, {realm or 'Unknown'})"
-                    )
-
-            else:
-                st.info("No connections found.")
-
-
-
-
-with col2:
-
-    if show_graph:
-
-        st.subheader("🕸️ Graph")
-
-        if results:
-            draw_graph(results)
+            lineage_results = get_lineage(name)
+    
+    
+    
+    
+    col1, col2 = st.columns([1, 2])
+    
+    
+    
+    
+    with col1:
+    
+        st.subheader("🔍 Character info")
+    
+        if not name:
+            st.info("Search for a character.")
         else:
-            st.info("No graph to display.")
+    
+            if char_info:
+    
+                st.markdown(f"### {char_info['name']}")
+                st.markdown(f"**Race:** {char_info['race'] or 'Unknown'}")
+                st.markdown(f"**Age:** {char_info['age'] or 'Unknown'}")
+    
+            else:
+                st.warning("Character not found.")
+    
+            if show_elf:
+    
+                st.markdown("---")
+                st.subheader("🧝 Elvish ancestry")
+    
+                if elf_results:
+                    for r in elf_results:
+                        st.markdown(f"🧝 {r['elf_ancestor']}")
+                else:
+                    st.info("No elvish ancestry found.")
+    
+            if show_lineage:
+    
+                st.markdown("---")
+                st.subheader("🧬 Lineage")
+    
+                if lineage_results:
+    
+                    for r in lineage_results:
+                        st.markdown(
+                            f"- {r['name']} ({r['race'] or 'Unknown'}, {r['realm'] or 'Unknown'})"
+                        )
+    
+                else:
+                    st.info("No lineage data found.")
+    
+            if show_connections:
+    
+                st.markdown("---")
+                st.subheader("🔗 Connections")
+    
+                if results:
+    
+                    for src, rel, dst, race, realm in results:
+    
+                        st.markdown(
+                            f"**{src}** → *{rel}* → **{dst}** "
+                            f"({race or 'Unknown'}, {realm or 'Unknown'})"
+                        )
+    
+                else:
+                    st.info("No connections found.")
+    
+    
+    
+    
+    with col2:
+    
+        if show_graph:
+    
+            st.subheader("🕸️ Graph")
+    
+            if results:
+                draw_graph(results)
+            else:
+                st.info("No graph to display.")
 
