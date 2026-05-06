@@ -68,24 +68,41 @@ else:
     )
 
     if driver is None:
-
         st.warning("Neo4j connection not available")
         st.stop()
 
-    char = get_character_basic(name)
+    # --- KÉT OSZLOP ---
+    col_left, col_right = st.columns([1, 2])
 
-    if char:
+    # --- BAL OSZLOP: karakter adatok ---
+    with col_left:
 
-        st.subheader(char["name"])
-        st.write("Race:", char["race"])
-        st.write("Age:", char["age"])
-        st.write("Realm:", char["realm"])
+        char = get_character_basic(name)
 
-    edges = get_neighbors(name)
+        if char:
+            st.subheader(char["name"])
+            st.write("Race:", char["race"])
+            st.write("Age:", char["age"])
+            st.write("Realm:", char["realm"])
 
-    if edges:
+        elves = check_elvish_ancestry(name)
+        if elves:
+            st.subheader("Elvish ancestry")
+            for e in elves:
+                st.write(e["elf_ancestor"])
 
-        draw_graph(edges)
+        lineage = get_lineage(name)
+        if lineage:
+            st.subheader("Lineage")
+            for l in lineage:
+                st.write(l["name"], "-", l["race"])
+
+    # --- JOBB OSZLOP: graph ---
+    with col_right:
+        edges = get_neighbors(name)
+        if edges:
+            draw_graph(edges)
+
 
     elves = check_elvish_ancestry(name)
 
